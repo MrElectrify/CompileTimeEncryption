@@ -22,9 +22,13 @@
 #endif
 
 #ifdef CTE_ENCRYPTSTRINGS
+// produces a c string
 #define XorStr(str) CompileTimeEncryption::XorContext<str, __FILE__, __LINE__>().Decrypt().data()
-#else
+// produces a std::array
 #define XorStr_(str) CompileTimeEncryption::XorContext<str, __FILE__, __LINE__>().Decrypt()
+#else
+#define XorStr(str) str
+#define XorStr_(str) str
 #endif
 
 namespace CompileTimeEncryption
