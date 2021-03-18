@@ -21,9 +21,9 @@
 #define FORCEINLINE __attribute__((always_inline)) inline
 #endif
 
-#define XorStr(str) XorContext<str, __FILE__, __LINE__>().Decrypt().data()
+#define XorStr(str) CompileTimeEncryption::XorContext<str, __FILE__, __LINE__>().Decrypt().data()
 
-#define XorStr_(str) XorContext<str, __FILE__, __LINE__>().Decrypt()
+#define XorStr_(str) CompileTimeEncryption::XorContext<str, __FILE__, __LINE__>().Decrypt()
 
 namespace CompileTimeEncryption
 {
