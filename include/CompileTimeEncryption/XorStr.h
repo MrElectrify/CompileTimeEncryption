@@ -1,8 +1,8 @@
-#ifndef COMPILETIMEENCRYPTION_H_
-#define COMPILETIMEENCRYPTION_H_
+#ifndef COMPILETIMEENCRYPTION_XORSTR_H_
+#define COMPILETIMEENCRYPTION_XORSTR_H_
 
 /// @file
-/// Compile-time encryption
+/// Compile-time string XOR encryption
 /// 3/18/21 11:48
 
 // STL includes
