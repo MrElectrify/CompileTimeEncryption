@@ -14,6 +14,17 @@
 // Intel includes
 #include <immintrin.h>
 
+// yes, I hate macros. It's the neatest way
+#ifdef _MSC_VER
+#define FORCEINLINE __forceinline
+#else
+#define FORCEINLINE __attribute__((always_inline)) inline
+#endif
+
+#define XorStr(str) XorContext<str, __FILE__, __LINE__>().Decrypt().data()
+
+#define XorStr_(str) XorContext<str, __FILE__, __LINE__>().Decrypt()
+
 namespace CompileTimeEncryption
 {
 	namespace Detail
@@ -126,7 +137,6 @@ namespace CompileTimeEncryption
 	{
 	public:
 		/// @brief Initializes the XorContext with the string
-		/// @tparam I The index numbers used to initialize the key and buffer
 		constexpr XorContext() noexcept
 		{
 			constexpr auto seed = Detail::RandomSeed<String, FileName, LineNumber>();
