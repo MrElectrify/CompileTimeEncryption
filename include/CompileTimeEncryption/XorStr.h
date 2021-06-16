@@ -89,7 +89,7 @@ namespace CompileTimeEncryption
 			for (size_t i = 0; i < (index / sizeof(seed)); ++i)
 				seed = Random64(seed);
 			// extract bytes from LSB to MSB
-			return (seed >> (index % sizeof(seed) * 8)) & 0xff;
+			return static_cast<char>((seed >> (index % sizeof(seed) * 8)) & 0xff);
 		}
 		/// @brief Generates a unique seed per string and compile
 		/// @tparam String The string to encrypt
@@ -113,7 +113,7 @@ namespace CompileTimeEncryption
 		constexpr size_t Align(size_t val)
 		{
 			if ((val % Alignment) != 0)
-				val = ((val | Alignment - 1) + 1);
+				val = ((val | (Alignment - 1)) + 1);
 			return val;
 		}
 
