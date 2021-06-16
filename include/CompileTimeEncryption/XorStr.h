@@ -64,7 +64,7 @@ namespace CompileTimeEncryption
 		/// @return The hash
 		constexpr uint64_t FNV1(const char* ptr, uint64_t hash = 0xcbf29ce484222325) noexcept
 		{
-			return (*ptr != '\0') ? FNV1(ptr + 1, hash * 0x100000001b3 ^ *ptr) : hash;
+			return (*ptr != '\0') ? FNV1(ptr + 1, hash * 0x100000001b3 ^ static_cast<unsigned char>(*ptr)) : hash;
 		}
 
 		/// @brief Calculates a pseudorandom number using the
@@ -128,7 +128,7 @@ namespace CompileTimeEncryption
 		{
 			if constexpr (Start < End)
 			{
-				f.operator() < Start > ();
+				f(std::integral_constant<decltype(Start), Start>());
 				constexpr_for<Start + Inc, End, Inc>(f);
 			}
 		}
@@ -141,12 +141,17 @@ namespace CompileTimeEncryption
 	template<Detail::FixedString String, Detail::FixedString FileName, size_t LineNumber>
 	class XorContext
 	{
+	private:
+		struct __m128Impl
+		{
+			__m128 val;
+		};
 	public:
 		/// @brief Initializes the XorContext with the string
 		constexpr XorContext() noexcept
 		{
 			constexpr auto seed = Detail::RandomSeed<String, FileName, LineNumber>();
-			Detail::constexpr_for<0, String.size(), 1>([this, seed]<auto i>()
+			Detail::constexpr_for<0, String.size(), 1>([this, seed](auto i)
 			{
 				m_key[i] = std::integral_constant<char, Detail::RandomChar(seed, i)>::value;
 				m_encBuf[i] = m_key[i] ^ std::integral_constant<char, String.buf[i]>::value;
@@ -155,12 +160,12 @@ namespace CompileTimeEncryption
 
 		/// @brief Decrypts the stored string
 		/// @return The stored string plus null padding
-		FORCEINLINE std::array<char, Detail::Align<sizeof(__m128)>(std::integral_constant<size_t, String.size()>::value)> Decrypt() const noexcept
+		FORCEINLINE std::array<char, Detail::Align<sizeof(__m128Impl)>(std::integral_constant<size_t, String.size()>::value)> Decrypt() const noexcept
 		{
-			alignas(sizeof(__m128)) std::array<char, Detail::Align<sizeof(__m128)>(std::integral_constant<size_t, String.size()>::value)> result;
+			alignas(sizeof(__m128Impl)) std::array<char, Detail::Align<sizeof(__m128Impl)>(std::integral_constant<size_t, String.size()>::value)> result;
 			// we use AVX because it is not only faster than simply looping with xor
 			// but it will also prevent compile-time evaluation, which is the whole goal
-			for (size_t i = 0; i < std::integral_constant<size_t, String.size()>::value; i += sizeof(__m128))
+			for (size_t i = 0; i < std::integral_constant<size_t, String.size()>::value; i += sizeof(__m128Impl))
 				_mm_store_ps(reinterpret_cast<float*>(result.data() + i),
 					_mm_xor_ps(_mm_load_ps(reinterpret_cast<const float*>(m_key.data() + i)),
 						_mm_load_ps(reinterpret_cast<const float*>(m_encBuf.data() + i))));
@@ -171,8 +176,8 @@ namespace CompileTimeEncryption
 		// intel's docs specify that AVX instructions require them to be aligned to
 		// that size. the size is also aligned to the size of __m128 because it will 
 		// be loaded into an AVX register, which is the size of __m128 in bytres
-		alignas(sizeof(__m128)) std::array<char, Detail::Align<sizeof(__m128)>(std::integral_constant<size_t, String.size()>::value)> m_key;
-		alignas(sizeof(__m128)) std::array<char, Detail::Align<sizeof(__m128)>(std::integral_constant<size_t, String.size()>::value)> m_encBuf;
+		alignas(sizeof(__m128Impl)) std::array<char, Detail::Align<sizeof(__m128Impl)>(std::integral_constant<size_t, String.size()>::value)> m_key;
+		alignas(sizeof(__m128Impl)) std::array<char, Detail::Align<sizeof(__m128Impl)>(std::integral_constant<size_t, String.size()>::value)> m_encBuf;
 	};
 }
 
